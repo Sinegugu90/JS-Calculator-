@@ -2,7 +2,16 @@
 const display = document.getElementById('display');
 
 // Track if we have performed a calculation
-let justcalculated = false;
+let justCalculated = false;
+
+function isOperator(character) {
+    return ['+',  '-', '*', '/'].includes (character);  
+}
+
+function getlastchar() {
+    return display.value.slice(-1);
+    
+}
 
 function appendToDisplay(value) {
     console.log('button Pressed:', value);
@@ -14,26 +23,56 @@ function appendToDisplay(value) {
         justcalculated = false;
         return;
     }
- 
-    // If current display show 0 and user enters a number, we wanna replace the 0
-    if (currentValue=== "0" && !isNaN(value)){
-        display.value = value;
-    } else if (currentValue === '0' && value === '.') {
-        display.value= currentValue + value;
-    } else if (value === '.') {
-        // Get the last number in the display
-        let lastNumber = currentValue.Split ('/[+\-*').pop();
-        // Only add the decimal if the currect number doesnt have ont
-        if (!lastNumber.inludes('.')){
-          display.value = currentValue + value
+    if (justCalculated && isOperator(value)) {
+        display.value = currentValue + value;
+        justCalculated = false;
+        return;
     }
+
+    // Handles operators
+    if (isOperator(value)) {
+        // Dont allow operator as first char (exception for minus)
+        if (currentValue === '0' && value !== '-') {
+            return; //Do nothing
+        }
+
+        // if the last character is already an operator, replace if
+        if (isOperator(getlastchar())) {
+            display.value = currentValue.slice(0, -1) + value;
+        }else {
+            display.value = currentValue + value;
+        }
+
+    } else if (!isNaN(value)) {
+
+        if (currentValue === '0'){
+            display.value = value;
+        } else {
+            display.value = currentValue + value;
+        }
+
+    } else if (value === '.') {
+        if (currentValue === '0') {
+            display.value = currentValue + value; 
+
+        } else {
+            // Get the last number in the display (after last operator)
+            let parts = currentValue.Split('/[+\-*/');
+            let lastNumber = parts[parts.length -1];
+
+            // Only add decimal if number doesn't already have one
+            if (!lastNumber.includes('.')) {
+                display.value = currentValue + value;
+                
+            }
+        }
 
 } else {
     display.value = currentValue + value;
 }
 
     // Reset the justCalculated flag when user starts typing
-    justcalculated = false;
+    justCalculated = false;
 
 
     console.log('Display updated to:', display.value);
@@ -43,16 +82,14 @@ function clearDisplay() {
     console.log('Clear button Pressed.');
 
     display.value ='0';
-    justcalculated = false;
+    justCalculated = false;
 
     display.style.background =rgb(241, 237, 237);
-    setTomeout(() => {
+    setTimeout(() => {
         display.style.backgroundColor = '';
     }, 150);
 
 
-
-    alert ('Clear button was clicked');
 }
 
 function deleteLast() {
@@ -61,7 +98,7 @@ function deleteLast() {
     let currentValue = display.value;
 
     // If theres only one character or its 0, reset to 0
-    if (currentValue.lenght <= 1 || currentValue === '0') {
+    if (currentValue.length <= 1 || currentValue === '0') {
         display.value = '0';
     } else {
         display.value = currentValue.slice (0, -1);
@@ -70,16 +107,16 @@ function deleteLast() {
 }
 
 function calculate() {
-    console.log(' Equals button pressed.');
+    console.log('Equals button pressed.');
 
-    alert (' Equals button was clicked');
+    alert ('Equals button was clicked');
 }
 
 document.addEventListener('keydown' , function(event) {
     console.log('key pressed', event.key);
 
     if (event.key >= '0' && event.key <= '9') {
-        appendToDisplay(event.key)
+        appendToDisplay(event.key);
     } else if (event.key === '.'){
         appendToDisplay('.');
     } else if (event.key === '+'){
@@ -105,7 +142,7 @@ document.addEventListener('keydown' , function(event) {
 
 document.addEventListener('DOMContentLoaded' , function(){
     console.log('Calculator loaded successfully');
-    console.log('Display elemt', display);
+    console.log('Display element', display);
 
     if (display) {
         console.log('Current display value:', display.value);
